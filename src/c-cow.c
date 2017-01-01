@@ -9,6 +9,43 @@
 #include <netinet/in.h>
 #include <string>
 
+using namespace std;
+
+class HTTPResponse {
+  std::string _header;
+  std::string _status;
+  std::string _content;
+
+  public:
+    HTTPResponse() {
+      _status = "200";
+    }
+
+    void addHeader(std::string type, std::string value) {
+      _header += type;
+      _header += ": ";
+      _header += value;
+      _header += "\r\n";
+    }
+
+    void setStatus(std::string code) {
+      _status = code;
+    }
+
+    void setContent(std::string content) {
+      _content = content;
+    }
+
+    std::string getHeader() {
+      return "HTTP/1.0 " + _status + "\r\n" + _header;
+    }
+
+    std::string output() {
+      addHeader("Content-Length", std::to_string(_content.size()));
+      return getHeader() + "\r\n" + _content;
+    }
+};
+
 void error(const char *msg)
 {
   perror(msg);
@@ -51,12 +88,15 @@ int main(int argc, char *argv[])
     if (n < 0) error("ERROR reading from socket");
     printf("Here is the message: %s\n",buffer);
 
-    std::string response = "HTTP/1.0 200\r\n";
-    response += "Server: c-cow v1 \r\n";
-    response += "Connection:keep-alive \r\n";
-    response += "Content-Length: 11 \r\n";
-    response += "Content-type: text/html\r\n\r\n";
-    response += "Hello world\r\n";
+
+    HTTPResponse resp;
+    resp.addHeader("Server", "c-cow v1");
+    resp.addHeader("Content-type", "text/html");
+
+    resp.setContent("Hello world!");
+
+    std::string response = resp.output();
+
 
     // Write to the socket, sending the response as a C string
     n = write(newsockfd, response.c_str(), response.size());
