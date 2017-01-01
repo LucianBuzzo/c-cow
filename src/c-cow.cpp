@@ -1,5 +1,6 @@
 /* A simple server in the internet domain using TCP
- *    The port number is passed as an argument */
+ * The port number is passed as an argument
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -91,9 +94,18 @@ int main(int argc, char *argv[])
 
     HTTPResponse resp;
     resp.addHeader("Server", "c-cow v1");
-    resp.addHeader("Content-type", "text/html");
 
-    resp.setContent("Hello world!");
+    ifstream file("sea-cow-1.jpg", ios::binary);
+
+    ostringstream ostrm;
+
+    ostrm << file.rdbuf();
+
+    string imageData(ostrm.str());
+
+    resp.addHeader("Content-type", "image/jpg");
+
+    resp.setContent(imageData);
 
     std::string response = resp.output();
 
