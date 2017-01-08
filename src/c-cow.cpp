@@ -11,6 +11,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -60,6 +61,19 @@ std::string imageFileToString(const char *filePath)
   string imageData(ostrm.str());
 
   return imageData;
+}
+
+std::string fileToString(const std::string &fileName)
+{
+  ifstream ifs(fileName.c_str(), ios::in | ios::binary | ios::ate);
+
+  ifstream::pos_type fileSize = ifs.tellg();
+  ifs.seekg(0, ios::beg);
+
+  vector<char> bytes(fileSize);
+  ifs.read(&bytes[0], fileSize);
+
+  return string(&bytes[0], fileSize);
 }
 
 void error(const char *msg)
