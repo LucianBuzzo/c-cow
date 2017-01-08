@@ -49,6 +49,19 @@ class HTTPResponse {
     }
 };
 
+std::string imageFileToString(const char *filePath)
+{
+  ifstream file(filePath, ios::binary);
+
+  ostringstream ostrm;
+
+  ostrm << file.rdbuf();
+
+  string imageData(ostrm.str());
+
+  return imageData;
+}
+
 void error(const char *msg)
 {
   perror(msg);
@@ -84,11 +97,10 @@ int main(int argc, char *argv[])
   clilen = sizeof(cli_addr);
 
   while(true) {
-    newsockfd = accept(sockfd,
-        (struct sockaddr *) &cli_addr,
-        &clilen);
-    if (newsockfd < 0)
+    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+    if (newsockfd < 0) {
       error("ERROR on accept");
+    }
     bzero(buffer,256);
     n = read(newsockfd, buffer, 255);
     if (n < 0) error("ERROR reading from socket");
@@ -98,24 +110,15 @@ int main(int argc, char *argv[])
     requestStream >> requestPath;
     printf("Here is the request path: %s\n", requestPath);
 
-
     HTTPResponse resp;
     resp.addHeader("Server", "c-cow v1");
-
-    ifstream file("sea-cow-1.jpg", ios::binary);
-
-    ostringstream ostrm;
-
-    ostrm << file.rdbuf();
-
-    string imageData(ostrm.str());
-
     resp.addHeader("Content-type", "image/jpg");
+
+    std::string imageData = imageFileToString("sea-cow-1.jpg");
 
     resp.setContent(imageData);
 
     std::string response = resp.output();
-
 
     // Write to the socket, sending the response as a C string
     n = write(newsockfd, response.c_str(), response.size());
