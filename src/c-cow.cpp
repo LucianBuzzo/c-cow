@@ -60,6 +60,9 @@ int main(int argc, char *argv[])
   int sockfd, newsockfd, portno;
   socklen_t clilen;
   char buffer[256];
+  char requestMethod[50];
+  char requestPath[50];
+  std::stringstream requestStream;
   struct sockaddr_in serv_addr, cli_addr;
   int n;
   if (argc < 2) {
@@ -87,9 +90,13 @@ int main(int argc, char *argv[])
     if (newsockfd < 0)
       error("ERROR on accept");
     bzero(buffer,256);
-    n = read(newsockfd,buffer,255);
+    n = read(newsockfd, buffer, 255);
     if (n < 0) error("ERROR reading from socket");
-    printf("Here is the message: %s\n",buffer);
+
+    requestStream.str(buffer);
+    requestStream >> requestMethod;
+    requestStream >> requestPath;
+    printf("Here is the request path: %s\n", requestPath);
 
 
     HTTPResponse resp;
