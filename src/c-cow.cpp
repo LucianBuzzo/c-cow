@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
   char buffer[256];
   char requestMethod[50];
   char requestPath[50];
+
   std::stringstream requestStream;
   struct sockaddr_in serv_addr, cli_addr;
   int n;
@@ -83,16 +84,17 @@ int main(int argc, char *argv[])
     exit(1);
   }
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0)
+  if (sockfd < 0) {
     error("ERROR opening socket");
+  }
   bzero((char *) &serv_addr, sizeof(serv_addr));
   portno = atoi(argv[1]);
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   serv_addr.sin_port = htons(portno);
-  if (bind(sockfd, (struct sockaddr *) &serv_addr,
-        sizeof(serv_addr)) < 0)
+  if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
     error("ERROR on binding");
+  }
   listen(sockfd,5);
   clilen = sizeof(cli_addr);
 
@@ -103,7 +105,9 @@ int main(int argc, char *argv[])
     }
     bzero(buffer,256);
     n = read(newsockfd, buffer, 255);
-    if (n < 0) error("ERROR reading from socket");
+    if (n < 0) {
+      error("ERROR reading from socket");
+    }
 
     requestStream.str(buffer);
     requestStream >> requestMethod;
@@ -112,11 +116,17 @@ int main(int argc, char *argv[])
 
     HTTPResponse resp;
     resp.addHeader("Server", "c-cow v1");
-    resp.addHeader("Content-type", "image/jpg");
 
-    std::string imageData = imageFileToString("sea-cow-1.jpg");
-
-    resp.setContent(imageData);
+    if (strcmp(requestPath, "/") == 0) {
+      resp.addHeader("Content-type", "text/html");
+      resp.setContent("Hello world");
+    } else if (strcmp(requestPath, "/image") == 0) {
+      resp.addHeader("Content-type", "image/jpg");
+      resp.setContent(imageFileToString("sea-cow-1.jpg"));
+    } else {
+      resp.addHeader("Content-type", "text/html");
+      resp.setContent("Not found");
+    }
 
     std::string response = resp.output();
 
