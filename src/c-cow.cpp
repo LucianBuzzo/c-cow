@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
     if (strcmp(requestPath, "/") == 0) {
       resp.addHeader("Content-type", "text/html");
-      resp.setContent("Hello world");
+      resp.setContent(fileToString("html/index.html"));
     } else if (strcmp(requestPath, "/image") == 0) {
       resp.addHeader("Content-type", "image/jpg");
       resp.setContent(imageFileToString("sea-cow-1.jpg"));
